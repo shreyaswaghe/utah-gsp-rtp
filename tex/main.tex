@@ -1,0 +1,53 @@
+\documentclass[11pt, letterpaper]{scrartcl}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{amsmath, amssymb, bm}
+\usepackage{physics, siunitx}
+\usepackage[shortlabels]{enumitem}
+\usepackage{amsthm}
+\usepackage{hyperref}
+
+\geometry{margin=2cm}
+\sisetup{separate-uncertainty=true, exponent-product=\cdot, range-units=single}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=cyan}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{7pt}
+
+\newcommand{\diff}{\mathop{}\!\mathrm{d}}
+\newcommand{\TODO}[1]{{\textbf{TODO:} {\color{red} #1}}}
+
+\input{~/.config/macros.tex}
+
+\title{Cover times for a Run-and-Tumble particle on a bounded interval}
+\subtitle{University of Utah Graduate School Preview Project}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+
+\section{Introduction}
+
+Consider a particle exhibiting dynamics in one dimension, governed by the Langevin equation
+\begin{equation}
+    \label{eq:langevin}
+    \dv{x}{t} = v \cdot \sigma(t)
+\end{equation}
+where $ v $ is a constant speed, and the polarity, $ \sigma(t) \in \{ \pm 1 \} $, determines the random, noisy evolution of the particle.
+The polarity switches between its two values $ \pm 1 $ as a Poisson process with rate $ \gamma $, i.e., the times between two consecutive switches is a Random Variable distributed as $ \text{Exp}(\gamma) $.
+The setting we consider is of \textbf{Stochastic Resetting and Velocity Randomization}, wherein the particle \emph{resets} to a point (which may or may not coincide with its original position), also as a Poisson process with rate $r$.
+
+This system, in its multidimensional equivalent, is reminiscent of a number of common problems across scientific disciplines, from stochastic search algorithms in computer science to the behavior of animals foraging for food in ecology (citation).
+
+Two important terms we will encounter in this short document are the \textbf{First Passage Time} (FPT) and the \textbf{Minimum Cover Time} (MCT), which are intimately related to one another:
+\begin{enumerate}
+
+    \item The FPT of a particle which \textit{spawns} or \textit{originates} at the point $x_0 > 0$ is the minimum time at which it hits a target $T$, assumed to be the origin without loss of generality.
+    \begin{equation}
+        \tau_{\text{FPT}} = \inf \{ t |  \} 
+    \end{equation}
+\end{enumerate}
+
+\end{document}
+

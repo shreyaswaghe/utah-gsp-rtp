@@ -1,0 +1,73 @@
+\documentclass[11pt, letterpaper]{scrartcl}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{amsmath, amssymb, bm}
+\usepackage{physics, siunitx}
+\usepackage[shortlabels]{enumitem}
+\usepackage{amsthm}
+\usepackage{hyperref}
+
+\usepackage{cancel}
+
+\geometry{margin=2cm}
+\sisetup{separate-uncertainty=true, exponent-product=\cdot, range-units=single}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=cyan}
+\setlength{\parindent}{0pt}
+
+\newcommand{\diff}{\mathop{}\!\mathrm{d}}
+\newcommand{\TODO}[1]{{\textbf{TODO:} {\color{red} #1}}}
+
+\newcommand{\E}{\mathbf{E}}
+
+\begin{document}
+
+\section{The Diffusive Limit of a Run and Tumble Particle Motion}
+
+\newcommand{\difflim}{\lim_{v,\gamma \to \infty}}
+The diffusive limit is 
+\begin{equation}
+    \lim_{v,\gamma \to \infty} \frac{v^{2}}{\gamma} \to 2D  
+\end{equation}
+
+The expression known to us for the exit time $\E T_{\text{exit}}$ is 
+\begin{align}
+    \difflim \E T_{\text{exit}} &= \difflim 
+    \left[
+        \frac{-2\gamma+r}{r(2\gamma+r)} + 
+        \frac{2\gamma+r}{r(2\gamma+r)} \cosh \left( \frac{L}{2v} \sqrt{r(2\gamma+r)} \right) +
+        \frac{v \sqrt{r(2\gamma+r)}}{r(2\gamma+r)} \sinh\left( \frac{L}{2v} \sqrt{r(2\gamma+r)} \right) 
+    \right] \\
+    \difflim \E T_{\text{exit}} &= \difflim 
+    \left[
+        \cancelto{-\frac{1}{r}}{\frac{(-2\gamma-r)}{r(\gamma+r)}} + \;
+        \cancelto{\frac{1}{r}}{\frac{(2\gamma+r)}{r(2\gamma+r)}} \cosh \left( \frac{L}{2v} \sqrt{r(2\gamma+r)} \right) +
+        \frac{v}{\sqrt{r(2\gamma+r)}} \sinh\left( \frac{L}{2v} \sqrt{r(2\gamma+r)} \right) 
+    \right] \\
+    \difflim \E T_{\text{exit}} &= \difflim 
+    \left[
+        -\frac{1}{r} + \;
+        +\frac{1}{r} \cosh \left( \frac{L}{2v} \sqrt{r(2\gamma+r)} \right) +
+        \frac{v}{\sqrt{r(2\gamma+r)}} \sinh\left( \frac{L}{2v} \sqrt{r(2\gamma+r)} \right) 
+    \right] 
+\end{align}
+
+Next, see that
+\begin{align}
+    \difflim \frac{\sqrt{r(2\gamma+r)}}{v} 
+    &= \difflim \sqrt{\frac{2r \gamma}{v^{2}} + \frac{r^{2}}{v^{2}}} \\
+    &= \sqrt{\frac{2r}{2D} + 0} \\
+    &= \sqrt{\frac{r}{D}}
+\end{align} 
+
+Thus, we arrive at the expression
+\begin{align}
+     \difflim \E T_{\text{exit}} &= 
+    \left[
+        -\frac{1}{r} \;
+        +\frac{1}{r} \cosh \left( \frac{L}{2} \sqrt{\frac{r}{D}} \right) +
+        \sqrt{\frac{D}{r}} \sinh\left( \frac{L}{2} \sqrt{\frac{r}{D}} \right) 
+    \right] 
+\end{align}
+
+\end{document}
+

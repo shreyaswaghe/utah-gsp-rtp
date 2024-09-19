@@ -1,7 +1,14 @@
 #include <RngStream.h>
+<<<<<<< HEAD
 #include <vector>
 
 #include <highfive/H5Easy.hpp>
+=======
+
+#include <argparse/argparse.hpp>
+#include <highfive/H5Easy.hpp>
+#include <vector>
+>>>>>>> 52ead93 (added cli options)
 
 void half_prob(RngStream& rng, std::vector<double>& out) {
     for (int i = 0; i < 1000; i++) {
@@ -16,6 +23,7 @@ void exp_prob(double& theta, RngStream& rng, std::vector<double>& out) {
 }
 
 int main(int argc, char* argv[]) {
+<<<<<<< HEAD
     std::string jobid = argv[1];
 
     int num_simulations = 5;
@@ -24,11 +32,71 @@ int main(int argc, char* argv[]) {
     double r = 1.0;
     double time = 0.0;
 
+=======
+    /*Experiment Configs*/
+    int num_simulations = 5000;
+>>>>>>> 52ead93 (added cli options)
     double L = 1.0;
     double v = 0.01;
     double init_pos = 0.2;
     double reset_pos = 0.2;
 
+<<<<<<< HEAD
+=======
+    double theta = 1.0;
+    double r = 1.0;
+
+    argparse::ArgumentParser parser("rtp_sim");
+
+    parser.add_argument("rate_reset")
+        .required()
+        .help("The rate of resetting to reset_pos.")
+        .store_into(r);
+
+    parser.add_argument("rate_switch")
+        .required()
+        .help("The rate of switching directions.")
+        .store_into(theta);
+
+    parser.add_argument("L")
+        .help("Size of the interval")
+        .default_value(1.0)
+        .store_into(L);
+
+    parser.add_argument("v")
+        .help("Particle velocity")
+        .default_value(0.01)
+        .store_into(v);
+
+    parser.add_argument("num_simulations")
+        .help("The number of realizations to run.")
+        .default_value(5000)
+        .store_into(num_simulations);
+
+    parser.add_argument("init_pos")
+        .help(
+            "The initialization position within the interval. Defaults to "
+            "0.5L.")
+        .default_value(-1.0)
+        .store_into(init_pos);
+
+    parser.add_argument("reset_pos")
+        .help("The reseting position within the interval. Defaults to 0.5L.")
+        .default_value(-1.0)
+        .store_into(reset_pos);
+
+    try {
+        parser.parse_args(argc, argv);
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        std::cerr << parser << std::endl;
+        std::exit(1);
+    }
+
+    init_pos = (init_pos < 0) ? 0.5 * L : init_pos;
+    reset_pos =(reset_pos < 0)? 0.5 * L : reset_pos;
+
+>>>>>>> 52ead93 (added cli options)
     std::vector<double> rand_switch;
     std::vector<double> rand_reset;
     std::vector<double> rand_dir;
@@ -43,6 +111,10 @@ int main(int argc, char* argv[]) {
 
     // exit time
     double x = init_pos;
+<<<<<<< HEAD
+=======
+    double time = 0.0;
+>>>>>>> 52ead93 (added cli options)
     int r_idx = 0;
     int s_idx = 0;
     int p_idx = 0;
@@ -50,7 +122,10 @@ int main(int argc, char* argv[]) {
     double p = 0.0;
     double next_reset, next_switch;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 52ead93 (added cli options)
     RngStream rng1("");
     RngStream rng2("");
     RngStream rng3("");
@@ -156,4 +231,7 @@ int main(int argc, char* argv[]) {
     }
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 52ead93 (added cli options)

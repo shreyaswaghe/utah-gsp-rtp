@@ -1,14 +1,10 @@
 #include <RngStream.h>
-<<<<<<< HEAD
 #include <vector>
 
-#include <highfive/H5Easy.hpp>
-=======
 
 #include <argparse/argparse.hpp>
 #include <highfive/H5Easy.hpp>
 #include <vector>
->>>>>>> 52ead93 (added cli options)
 
 void half_prob(RngStream& rng, std::vector<double>& out) {
     for (int i = 0; i < 1000; i++) {
@@ -23,26 +19,20 @@ void exp_prob(double& theta, RngStream& rng, std::vector<double>& out) {
 }
 
 int main(int argc, char* argv[]) {
-<<<<<<< HEAD
-    std::string jobid = argv[1];
-
-    int num_simulations = 5;
-
-    double theta = 1.0;
-    double r = 1.0;
-    double time = 0.0;
-
-=======
     /*Experiment Configs*/
+    
+    long jobid = std::stol((std::getenv("SLURM_JOB_ID")));
+    std::string result_dir{"results"};
+
+
+    std::cout << jobid << std::endl;
+
     int num_simulations = 5000;
->>>>>>> 52ead93 (added cli options)
     double L = 1.0;
     double v = 0.01;
     double init_pos = 0.2;
     double reset_pos = 0.2;
 
-<<<<<<< HEAD
-=======
     double theta = 1.0;
     double r = 1.0;
 
@@ -96,7 +86,6 @@ int main(int argc, char* argv[]) {
     init_pos = (init_pos < 0) ? 0.5 * L : init_pos;
     reset_pos =(reset_pos < 0)? 0.5 * L : reset_pos;
 
->>>>>>> 52ead93 (added cli options)
     std::vector<double> rand_switch;
     std::vector<double> rand_reset;
     std::vector<double> rand_dir;
@@ -111,10 +100,7 @@ int main(int argc, char* argv[]) {
 
     // exit time
     double x = init_pos;
-<<<<<<< HEAD
-=======
     double time = 0.0;
->>>>>>> 52ead93 (added cli options)
     int r_idx = 0;
     int s_idx = 0;
     int p_idx = 0;
@@ -122,10 +108,6 @@ int main(int argc, char* argv[]) {
     double p = 0.0;
     double next_reset, next_switch;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 52ead93 (added cli options)
     RngStream rng1("");
     RngStream rng2("");
     RngStream rng3("");
@@ -229,9 +211,18 @@ int main(int argc, char* argv[]) {
         }
         fp_time.push_back(time);
     }
+
+    H5Easy::File writefile(result_dir + "/" + std::to_string(jobid) + ".h5", H5Easy::File::Create);
+
+    H5Easy::dump(writefile, "rawdata/interval_exit_time", exit_time);
+    H5Easy::dump(writefile, "rawdata/end_hit", end_hit);
+    H5Easy::dump(writefile, "rawdata/first_passage_time", fp_time);
+
+    H5Easy::dump(writefile, "metadata/reset_rate", r);
+    H5Easy::dump(writefile, "metadata/switch_rate", theta);
+    H5Easy::dump(writefile, "metadata/L", L);
+    H5Easy::dump(writefile, "metadata/v", v);
+    H5Easy::dump(writefile, "metadata/init_pos", init_pos);
+    H5Easy::dump(writefile, "metadata/reset_pos", reset_pos);
+    H5Easy::dump(writefile, "metadata/num_simulations", num_simulations);
 }
-
-<<<<<<< HEAD
-
-=======
->>>>>>> 52ead93 (added cli options)

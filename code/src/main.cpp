@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
         experiment_name = experiment_name_env;
     }
 
-    std::string result_dir{"results"};
+    std::string result_dir{"results/"+experiment_name};
     std::cout << jobid << std::endl;
 
     int num_simulations = 5000;
@@ -152,17 +152,14 @@ int main(int argc, char* argv[]) {
             time += dt;
 
             if (r_idx == 999) {
-                std::cout << "Refilling reset" << std::endl;
                 exp_prob(r, rng2, rand_reset);
                 r_idx = 0;
             }
             if (s_idx == 999) {
-                std::cout << "Refilling switch" << std::endl;
                 exp_prob(theta, rng3, rand_switch);
                 s_idx = 0;
             }
             if (p_idx == 999) {
-                std::cout << "Refilling p" << std::endl;
                 half_prob(rng1, rand_dir);
                 p_idx = 0;
             }

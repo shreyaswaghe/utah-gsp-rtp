@@ -128,8 +128,6 @@ int main(int argc, char* argv[]) {
     exp_prob(theta, rng3, rand_switch);
 
     for (int sim_count = 0; sim_count < num_simulations; sim_count++) {
-        std::cout << "Sim count: " << sim_count << std::endl;
-
         while (true) {
             if ((next_reset = rand_reset[r_idx++]) <
                 (next_switch = rand_switch[s_idx++])) {  // reset

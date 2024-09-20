@@ -1,6 +1,4 @@
 #include <RngStream.h>
-#include <vector>
-
 
 #include <argparse/argparse.hpp>
 #include <highfive/H5Easy.hpp>
@@ -20,11 +18,24 @@ void exp_prob(double& theta, RngStream& rng, std::vector<double>& out) {
 
 int main(int argc, char* argv[]) {
     /*Experiment Configs*/
-    
-    long jobid = std::stol((std::getenv("SLURM_JOB_ID")));
+
+    char* jobid_env;
+    long jobid;
+    if (NULL == (jobid_env = std::getenv("SLURM_JOB_ID"))) {
+        jobid = 0;
+    } else {
+        jobid = std::stol(jobid_env);
+    }
+
+    std::string experiment_name;
+    char* experiment_name_env;
+    if (NULL == (experiment_name_env = std::getenv("EXPERIMENT_NAME"))) {
+        experiment_name = "TEST";
+    } else {
+        experiment_name = experiment_name_env;
+    }
+
     std::string result_dir{"results"};
-
-
     std::cout << jobid << std::endl;
 
     int num_simulations = 5000;
@@ -84,7 +95,7 @@ int main(int argc, char* argv[]) {
     }
 
     init_pos = (init_pos < 0) ? 0.5 * L : init_pos;
-    reset_pos =(reset_pos < 0)? 0.5 * L : reset_pos;
+    reset_pos = (reset_pos < 0) ? 0.5 * L : reset_pos;
 
     std::vector<double> rand_switch;
     std::vector<double> rand_reset;
@@ -212,7 +223,8 @@ int main(int argc, char* argv[]) {
         fp_time.push_back(time);
     }
 
-    H5Easy::File writefile(result_dir + "/" + std::to_string(jobid) + ".h5", H5Easy::File::Create);
+    H5Easy::File writefile(result_dir + "/" + std::to_string(jobid) + ".h5",
+                           H5Easy::File::Create);
 
     H5Easy::dump(writefile, "rawdata/interval_exit_time", exit_time);
     H5Easy::dump(writefile, "rawdata/end_hit", end_hit);

@@ -27,6 +27,8 @@ target_include_directories(
     ${PROJECT_NAME}
     PRIVATE
     /usr/local/include
+    PRIVATE
+    include
 )
 
 set_target_properties(
@@ -45,5 +47,5 @@ install(
 target_compile_options(
     ${PROJECT_NAME}
     PRIVATE
-    -g -Wall
+    -g -Wall -O3
 )

@@ -4,6 +4,54 @@
 #include <highfive/H5Easy.hpp>
 #include <vector>
 
+#include <semaphore.h>
+#include <fcntl.h>
+
+#include "progressbar.hpp"
+
+class Particle
+{
+    public:
+        Particle(double pos, double vel): position(pos), velocity(vel)
+        {
+            new_velocity();
+        }
+
+        void move(double dt)
+        {
+            position += velocity * dt;
+        }
+
+        void switch_direction(double dt)
+        {
+            move(dt);
+            velocity *= -1;
+        }
+
+        void reset_to(double pos, double dt)
+        {
+            move(dt);
+            position = pos;
+            new_velocity();
+        }
+
+        void new_velocity()
+        {
+            velocity = ((rng_vel.RandU01() < 0.5)? -1 : 1) * std::abs(velocity);
+        }
+
+        double get_position()
+        {
+            return position;
+        }
+    
+    private:
+        double position;
+        double velocity;
+        RngStream rng_vel = RngStream();
+};
+
+
 void half_prob(RngStream& rng, std::vector<double>& out) {
     for (int i = 0; i < 1000; i++) {
         out[i] = (rng.RandU01());
@@ -16,13 +64,162 @@ void exp_prob(double& theta, RngStream& rng, std::vector<double>& out) {
     }
 }
 
+double interval_exit(double r, double s, double init_pos, double reset_pos, double v, double L, RngStream& rng1, RngStream& rng2, double& end_hit)
+{
+    std::vector<double> rand_switch;
+    std::vector<double> rand_reset;
+
+    rand_reset.reserve(1000);
+    rand_switch.reserve(1000);
+
+    exp_prob(r, rng1, rand_reset);
+    exp_prob(s, rng2, rand_switch);
+   
+    int switch_index = 0;
+    int reset_index = 0;
+    double dt = 0.0;
+    double next_reset, next_switch;
+    double time;
+    time = 0.0;
+
+    Particle p(init_pos, v);
+    while (p.get_position() > 0 && p.get_position() < L)
+    {
+            if((next_reset = rand_reset[reset_index]) < (next_switch = rand_switch[switch_index]))
+            {
+                // resetting
+                dt = next_reset;
+                p.reset_to(reset_pos, dt);
+                reset_index++;
+                if(reset_index >= 999)
+                {
+                    exp_prob(r, rng1, rand_reset);
+                    reset_index = 0;
+                }
+            }
+            else {
+                // switching
+                dt = next_switch;
+                p.switch_direction(dt);
+                switch_index++;
+                if(switch_index >= 999){
+                    exp_prob(s, rng2, rand_switch);
+                    switch_index ++;
+                }
+            }
+            time += dt;
+    }
+
+    end_hit = p.get_position();
+    return time;
+}
+
+
+double fpt_from_0(double r, double s, double reset_pos, double v,double L, RngStream& rng1, RngStream& rng2)
+{
+    std::vector<double> rand_switch;
+    std::vector<double> rand_reset;
+
+    rand_reset.reserve(1000);
+    rand_switch.reserve(1000);
+
+    exp_prob(r, rng1, rand_reset);
+    exp_prob(s, rng2, rand_switch);
+   
+    int switch_index = 0;
+    int reset_index = 0;
+    double dt = 0.0;
+    double next_reset, next_switch;
+    double time;
+    time = 0.0;
+
+    Particle p(0, v);
+    while (p.get_position() < L)
+    {
+            if(((next_reset = rand_reset[reset_index])) < (next_switch = rand_switch[switch_index]))
+            {
+                // resetting
+                dt = next_reset;
+                p.reset_to(reset_pos, dt);
+                reset_index++;
+                if(reset_index >= 999)
+                {
+                    exp_prob(r, rng1, rand_reset);
+                    reset_index = 0;
+                }
+            }
+            else {
+                // switching
+                dt = next_switch;
+                p.switch_direction(dt);
+                switch_index++;
+                if(switch_index >= 999){
+                    exp_prob(s, rng2, rand_switch);
+                    switch_index = 0;
+                }
+            }
+            time += dt;
+    }
+
+    return time;
+}
+
+double fpt_from_L(double r, double s, double reset_pos, double v, double L, RngStream& rng1, RngStream& rng2)
+{
+    std::vector<double> rand_switch;
+    std::vector<double> rand_reset;
+
+    rand_reset.reserve(1000);
+    rand_switch.reserve(1000);
+
+    exp_prob(r, rng1, rand_reset);
+    exp_prob(s, rng2, rand_switch);
+   
+    int switch_index = 0;
+    int reset_index = 0;
+    double dt = 0.0;
+    double next_reset, next_switch;
+    double time;
+    time = 0.0;
+
+    Particle p(L, v);
+    while (p.get_position() > 0)
+    {
+            if(((next_reset = rand_reset[reset_index])) < (next_switch = rand_switch[switch_index]))
+            {
+                // resetting
+                dt = next_reset;
+                p.reset_to(reset_pos, dt);
+                reset_index++;
+                if(reset_index >= 999)
+                {
+                    exp_prob(r, rng1, rand_reset);
+                    reset_index = 0;
+                }
+            }
+            else {
+                // switching
+                dt = next_switch;
+                p.switch_direction(dt);
+                switch_index++;
+                if(switch_index >= 999){
+                    exp_prob(s, rng2, rand_switch);
+                    switch_index = 0;
+                }
+            }
+            time += dt;
+    }
+
+    return time;
+}
+
 int main(int argc, char* argv[]) {
     /*Experiment Configs*/
 
     char* jobid_env;
-    long jobid;
+    unsigned long jobid;
     if (NULL == (jobid_env = std::getenv("SLURM_JOB_ID"))) {
-        jobid = 0;
+        jobid = 10101;
     } else {
         jobid = std::stol(jobid_env);
     }
@@ -47,7 +244,7 @@ int main(int argc, char* argv[]) {
     double r = 1.0;
 
     argparse::ArgumentParser parser("rtp_sim");
-
+    
     parser.add_argument("rate_reset")
         .required()
         .help("The rate of resetting to reset_pos.")
@@ -96,139 +293,63 @@ int main(int argc, char* argv[]) {
     init_pos = (init_pos < 0) ? 0.5 * L : init_pos;
     reset_pos = (reset_pos < 0) ? 0.5 * L : reset_pos;
 
-    std::vector<double> rand_switch;
-    std::vector<double> rand_reset;
-    std::vector<double> rand_dir;
-
-    rand_dir.reserve(1000);
-    rand_reset.reserve(1000);
-    rand_switch.reserve(1000);
-
     std::vector<double> exit_time;
     std::vector<double> end_hit;
     std::vector<double> fp_time;
 
-    // exit time
-    double x = init_pos;
-    double time = 0.0;
-    int r_idx = 0;
-    int s_idx = 0;
-    int p_idx = 0;
-    double dt = 0.0;
-    double p = 0.0;
-    double next_reset, next_switch;
+    exit_time.reserve(num_simulations);
+    end_hit.reserve(num_simulations);
+    fp_time.reserve(num_simulations);
+
+    unsigned long seed[6] {jobid, jobid, jobid, jobid, jobid, jobid};
+    RngStream::SetPackageSeed(seed);
 
     RngStream rng1("");
     RngStream rng2("");
-    RngStream rng3("");
-
-    half_prob(rng1, rand_dir);
-    exp_prob(r, rng2, rand_reset);
-    exp_prob(theta, rng3, rand_switch);
-
-    for (int sim_count = 0; sim_count < num_simulations; sim_count++) {
-        while (true) {
-            if ((next_reset = rand_reset[r_idx++]) <
-                (next_switch = rand_switch[s_idx++])) {  // reset
-                dt = next_reset;
-                x = reset_pos;
-
-                p = rand_dir[p_idx++];
-                v = ((p > 0.5) - (p < 0.5)) * std::abs(v);
-
-                s_idx--;
-
-            } else {  // direction switch
-                dt = next_switch;
-                x += v * dt;
-
-                v = -v;
-                r_idx--;
-            }
-
-            time += dt;
-
-            if (r_idx == 999) {
-                exp_prob(r, rng2, rand_reset);
-                r_idx = 0;
-            }
-            if (s_idx == 999) {
-                exp_prob(theta, rng3, rand_switch);
-                s_idx = 0;
-            }
-            if (p_idx == 999) {
-                half_prob(rng1, rand_dir);
-                p_idx = 0;
-            }
-
-            if (x < 0 || x > L) {
-                break;
-            }
+        
+    for(int sim_count = 0;sim_count < num_simulations; sim_count++)
+    {
+        double end;
+        exit_time.push_back(interval_exit(r, theta,init_pos, reset_pos, v, L, rng1, rng2, end));
+        if (end >= L)
+        {
+            end_hit.push_back(L);
+            fp_time.push_back(fpt_from_L(r, theta, reset_pos, v, L, rng1, rng2));
+        }
+        else 
+        {
+            end_hit.push_back(0);
+            fp_time.push_back(fpt_from_0(r, theta, reset_pos, v, L, rng1, rng2));
         }
 
-        double hit = (x > L) ? L : 0;
-
-        exit_time.push_back(time);
-        end_hit.push_back(hit);
-
-        // p = exp(-(k+r).*abs(length)./v)./2
-        x = hit;
-        time = 0.0;
-        while (true) {
-            if ((next_reset = rand_reset[r_idx++]) <
-                (next_switch = rand_switch[s_idx++])) {  // reset
-                dt = next_reset;
-                x = reset_pos;
-
-                p = rand_dir[p_idx++];
-                v = ((p > 0.5) - (p < 0.5)) * std::abs(v);
-
-                s_idx--;
-
-            } else {  // direction switch
-                dt = next_switch;
-                x += v * dt;
-
-                v = -v;
-                r_idx--;
-            }
-
-            time += dt;
-
-            if (r_idx == 999) {
-                exp_prob(r, rng2, rand_reset);
-                r_idx = 0;
-            }
-            if (s_idx == 999) {
-                exp_prob(theta, rng3, rand_switch);
-                s_idx = 0;
-            }
-            if (p_idx == 999) {
-                half_prob(rng1, rand_dir);
-                p_idx = 0;
-            }
-
-            if (hit && x < 0) {
-                break;
-            } else if (!hit && x > L) {
-                break;
-            }
-        }
-        fp_time.push_back(time);
     }
 
-    H5Easy::File writefile(result_dir + "/" + std::to_string(jobid) + ".h5",
-                           H5Easy::File::Create);
 
-    H5Easy::dump(writefile, "rawdata/interval_exit_time", exit_time);
-    H5Easy::dump(writefile, "rawdata/end_hit", end_hit);
-    H5Easy::dump(writefile, "rawdata/first_passage_time", fp_time);
+    std::cout << "finished sims" << std::endl;
+    std::cout << std::flush;
+    
+    {
+        std::cout << "Beginning writing" << std::endl << std::flush;
+        H5Easy::File writefile(result_dir + "/" + std::to_string(jobid) + ".h5",
+                               H5Easy::File::OpenOrCreate);
 
-    H5Easy::dump(writefile, "metadata/reset_rate", r);
-    H5Easy::dump(writefile, "metadata/switch_rate", theta);
-    H5Easy::dump(writefile, "metadata/L", L);
-    H5Easy::dump(writefile, "metadata/v", v);
-    H5Easy::dump(writefile, "metadata/init_pos", init_pos);
-    H5Easy::dump(writefile, "metadata/reset_pos", reset_pos);
-    H5Easy::dump(writefile, "metadata/num_simulations", num_simulations);
+        H5Easy::DumpOptions dump_opt;
+        dump_opt.set(H5Easy::Flush::True);
+        dump_opt.set(H5Easy::Compression());
+        dump_opt.set(H5Easy::DumpMode::Overwrite);
+
+        H5Easy::dump(writefile, "rawdata/interval_exit_time", exit_time);
+        H5Easy::dump(writefile, "rawdata/end_hit", end_hit);
+        H5Easy::dump(writefile, "rawdata/first_passage_time", fp_time);
+
+        H5Easy::dump(writefile, "metadata/reset_rate", r);
+        H5Easy::dump(writefile, "metadata/switch_rate", theta);
+        H5Easy::dump(writefile, "metadata/L", L);
+        H5Easy::dump(writefile, "metadata/v", std::abs(v));
+        H5Easy::dump(writefile, "metadata/init_pos", init_pos);
+        H5Easy::dump(writefile, "metadata/reset_pos", reset_pos);
+        H5Easy::dump(writefile, "metadata/num_simulations", num_simulations);
+
+        writefile.flush();
+    }
 }

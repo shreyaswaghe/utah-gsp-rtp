@@ -36,7 +36,6 @@ int main(int argc, char* argv[]) {
     }
 
     std::string result_dir{"results/"+experiment_name};
-    std::cout << jobid << std::endl;
 
     int num_simulations = 5000;
     double L = 1.0;
@@ -59,29 +58,29 @@ int main(int argc, char* argv[]) {
         .help("The rate of switching directions.")
         .store_into(theta);
 
-    parser.add_argument("L")
+    parser.add_argument("--L")
         .help("Size of the interval")
         .default_value(1.0)
         .store_into(L);
 
-    parser.add_argument("v")
+    parser.add_argument("--v")
         .help("Particle velocity")
         .default_value(0.01)
         .store_into(v);
 
-    parser.add_argument("num_simulations")
+    parser.add_argument("--num_simulations")
         .help("The number of realizations to run.")
         .default_value(5000)
         .store_into(num_simulations);
 
-    parser.add_argument("init_pos")
+    parser.add_argument("--init_pos")
         .help(
             "The initialization position within the interval. Defaults to "
             "0.5L.")
         .default_value(-1.0)
         .store_into(init_pos);
 
-    parser.add_argument("reset_pos")
+    parser.add_argument("--reset_pos")
         .help("The reseting position within the interval. Defaults to 0.5L.")
         .default_value(-1.0)
         .store_into(reset_pos);

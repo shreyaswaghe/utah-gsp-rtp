@@ -64,13 +64,16 @@ void exp_prob(double& theta, RngStream& rng, std::vector<double>& out) {
     }
 }
 
-double interval_exit(double r, double s, double init_pos, double reset_pos, double v, double L, RngStream& rng1, RngStream& rng2, double& end_hit)
+double interval_exit(double r, double s, double init_pos, double reset_pos, double v, double L, double& end_hit)
 {
     std::vector<double> rand_switch;
     std::vector<double> rand_reset;
 
     rand_reset.reserve(1000);
     rand_switch.reserve(1000);
+
+    RngStream rng1("");
+    RngStream rng2("");
 
     exp_prob(r, rng1, rand_reset);
     exp_prob(s, rng2, rand_switch);
@@ -115,13 +118,16 @@ double interval_exit(double r, double s, double init_pos, double reset_pos, doub
 }
 
 
-double fpt_from_0(double r, double s, double reset_pos, double v,double L, RngStream& rng1, RngStream& rng2)
+double fpt_from_0(double r, double s, double reset_pos, double v,double L)
 {
     std::vector<double> rand_switch;
     std::vector<double> rand_reset;
 
     rand_reset.reserve(1000);
     rand_switch.reserve(1000);
+
+    RngStream rng1("");
+    RngStream rng2("");
 
     exp_prob(r, rng1, rand_reset);
     exp_prob(s, rng2, rand_switch);
@@ -164,13 +170,16 @@ double fpt_from_0(double r, double s, double reset_pos, double v,double L, RngSt
     return time;
 }
 
-double fpt_from_L(double r, double s, double reset_pos, double v, double L, RngStream& rng1, RngStream& rng2)
+double fpt_from_L(double r, double s, double reset_pos, double v, double L)
 {
     std::vector<double> rand_switch;
     std::vector<double> rand_reset;
 
     rand_reset.reserve(1000);
     rand_switch.reserve(1000);
+
+    RngStream rng1("");
+    RngStream rng2("");
 
     exp_prob(r, rng1, rand_reset);
     exp_prob(s, rng2, rand_switch);
@@ -310,16 +319,16 @@ int main(int argc, char* argv[]) {
     for(int sim_count = 0;sim_count < num_simulations; sim_count++)
     {
         double end;
-        exit_time.push_back(interval_exit(r, theta,init_pos, reset_pos, v, L, rng1, rng2, end));
+        exit_time.push_back(interval_exit(r, theta,init_pos, reset_pos, v, L, end));
         if (end >= L)
         {
             end_hit.push_back(L);
-            fp_time.push_back(fpt_from_L(r, theta, reset_pos, v, L, rng1, rng2));
+            fp_time.push_back(fpt_from_L(r, theta, reset_pos, v, L));
         }
         else 
         {
             end_hit.push_back(0);
-            fp_time.push_back(fpt_from_0(r, theta, reset_pos, v, L, rng1, rng2));
+            fp_time.push_back(fpt_from_0(r, theta, reset_pos, v, L));
         }
 
     }

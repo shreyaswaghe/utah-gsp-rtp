@@ -107,7 +107,7 @@ double interval_exit(double r, double s, double init_pos, double reset_pos, doub
                 switch_index++;
                 if(switch_index >= 999){
                     exp_prob(s, rng2, rand_switch);
-                    switch_index ++;
+                    switch_index=0;
                 }
             }
             time += dt;

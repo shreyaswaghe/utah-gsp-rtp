@@ -22,4 +22,4 @@ rate_switch=${rate_switch_values[$(( trial % ${#rate_switch_values[@]} ))]}
 
 mkdir -p results/${SLURM_JOB_NAME}/
 
-EXPERIMENT_NAME=${SLURM_JOB_NAME} ./bin/rtp_sim --v 0.2 --num_simulations 50 ${rate_reset} ${rate_switch}
+EXPERIMENT_NAME=${SLURM_JOB_NAME} ./bin/rtp_sim --v 0.2 --num_simulations 5000 ${rate_reset} ${rate_switch}

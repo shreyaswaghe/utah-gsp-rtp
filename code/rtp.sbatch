@@ -1,16 +1,29 @@
 #!/bin/env bash
 
-#SBATCH --array=0-624
+#SBATCH --array=0-3124
 #SBATCH --job-name=rtp-test
 #SBATCH --output=output/output-%j.txt
 #SBATCH --mem=1800MB
-#SBATCH --time=0-4:0:0
+#SBATCH --time=0-0:5:0
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=main
 
-rate_reset_values=( 0.01 1.2595833333333333 2.5091666666666663 3.7587499999999996 5.008333333333333 6.257916666666667 7.507499999999999 8.757083333333332 10.006666666666666 11.25625 12.505833333333333 13.755416666666665 15.004999999999999 16.254583333333333 17.504166666666666 18.75375 20.003333333333334 21.252916666666668 22.5025 23.752083333333335 25.00166666666667 26.25125 27.500833333333333 28.750416666666666 30.0 )
-rate_switch_values=( 0.01 0.21791666666666668 0.42583333333333334 0.63375 0.8416666666666667 1.0495833333333333 1.2575 1.4654166666666666 1.6733333333333333 1.88125 2.0891666666666664 2.297083333333333 2.505 2.7129166666666666 2.920833333333333 3.1287499999999997 3.3366666666666664 3.544583333333333 3.7525 3.9604166666666663 4.168333333333333 4.37625 4.5841666666666665 4.792083333333333 5.0 )
+rate_reset_values=( 0.1 1.35 2.59 3.84 5.08 6.33 7.57 8.82 10.07 11.31 12.56 13.8 15.05 16.3 17.54 18.79 20.03 21.28 22.52 23.77 25.02 26.26 27.51 28.75 30.0 )
+rate_switch_values=( 1.0 2.0 3.0 4.0 5.0 )
+init_pos_values=( 0.1 0.25 0.5 0.75 0.99 )
+reset_pos_values=( 0.1 0.25 0.5 0.75 0.99 )
+
+trial=${SLURM_ARRAY_TASK_ID}
+rate_reset=${rate_reset_values[$(( trial % ${#rate_reset_values[@]} ))]}
+trial=$(( trial / ${#rate_reset_values[@]} ))
+rate_switch=${rate_switch_values[$(( trial % ${#rate_switch_values[@]} ))]}
+trial=$(( trial / ${#rate_switch_values[@]} ))
+init_pos=${init_pos_values[$(( trial % ${#init_pos_values[@]} ))]}
+trial=$(( trial / ${#init_pos_values[@]} ))
+reset_pos=${reset_pos_values[$(( trial % ${#reset_pos_values[@]} ))]}
+
+
 
 trial=${SLURM_ARRAY_TASK_ID}
 rate_reset=${rate_reset_values[$(( trial % ${#rate_reset_values[@]} ))]}
@@ -22,4 +35,4 @@ rate_switch=${rate_switch_values[$(( trial % ${#rate_switch_values[@]} ))]}
 
 mkdir -p results/${SLURM_JOB_NAME}/
 
-EXPERIMENT_NAME=${SLURM_JOB_NAME} ./bin/rtp_sim --v 0.2 --num_simulations 5000 ${rate_reset} ${rate_switch}
+EXPERIMENT_NAME=${SLURM_JOB_NAME} ./bin/rtp_sim --v 5.0 --num_simulations 10000 --init_pos ${init_pos} --reset_pos ${reset_pos} ${rate_reset} ${rate_switch}

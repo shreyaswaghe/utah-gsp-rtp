@@ -82,9 +82,9 @@ double interval_exit(double r, double s, double init_pos, double reset_pos, doub
     int reset_index = 0;
     double dt = 0.0;
     double next_reset, next_switch;
-    double time;
-    time = 0.0;
+    double time = 0.0;
 
+    double c = 0.0,d = 0.0,e = 0.0;
     Particle p(init_pos, v);
     while (p.get_position() > 0 && p.get_position() < L)
     {
@@ -110,7 +110,11 @@ double interval_exit(double r, double s, double init_pos, double reset_pos, doub
                     switch_index=0;
                 }
             }
-            time += dt;
+            d = dt - c; 
+            e = time + d;
+            c = (e - time) - d;
+            
+            time = e;
     }
 
     end_hit = p.get_position();
@@ -138,6 +142,7 @@ double fpt_from_0(double r, double s, double reset_pos, double v,double L)
     double next_reset, next_switch;
     double time;
     time = 0.0;
+    double c = 0.0,d = 0.0,e = 0.0;
 
     Particle p(0, v);
     while (p.get_position() < L)
@@ -164,7 +169,11 @@ double fpt_from_0(double r, double s, double reset_pos, double v,double L)
                     switch_index = 0;
                 }
             }
-            time += dt;
+            d = dt - c; 
+            e = time + d;
+            c = (e - time) - d;
+            
+            time = e;
     }
 
     return time;
@@ -190,6 +199,7 @@ double fpt_from_L(double r, double s, double reset_pos, double v, double L)
     double next_reset, next_switch;
     double time;
     time = 0.0;
+    double c = 0.0,d = 0.0,e = 0.0;
 
     Particle p(L, v);
     while (p.get_position() > 0)
@@ -216,7 +226,12 @@ double fpt_from_L(double r, double s, double reset_pos, double v, double L)
                     switch_index = 0;
                 }
             }
-            time += dt;
+            d = dt - c; 
+            e = time + d;
+            c = (e - time) - d;
+            
+            time = e;
+ 
     }
 
     return time;

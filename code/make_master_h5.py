@@ -36,7 +36,7 @@ for file in h5files:
         for key in f['rawdata'].keys():
             vds_shape = f[f'rawdata/{key}'].shape
             vds_layout = h5py.VirtualLayout(vds_shape, np.float64)
-            vds_layout[:] = h5py.VirtualSource(file, name=f'rawdata/{key}', shape=(5000,), dtype=np.float64, maxshape=(None,))
+            vds_layout[:] = h5py.VirtualSource(file, name=f'rawdata/{key}', shape=vds_shape, dtype=np.float64, maxshape=(None,))
             grp.create_virtual_dataset(f'rawdata/{key}', vds_layout, fillvalue=-1)
     except:
         print(file)

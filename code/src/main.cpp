@@ -127,8 +127,8 @@ double fpt_from_0(double r, double s, double reset_pos, double v,double L)
     std::vector<double> rand_switch;
     std::vector<double> rand_reset;
 
-    rand_reset.reserve(1000);
-    rand_switch.reserve(1000);
+    rand_reset.reserve(10000);
+    rand_switch.reserve(10000);
 
     RngStream rng1("");
     RngStream rng2("");
@@ -153,7 +153,7 @@ double fpt_from_0(double r, double s, double reset_pos, double v,double L)
                 dt = next_reset;
                 p.reset_to(reset_pos, dt);
                 reset_index++;
-                if(reset_index >= 999)
+                if(reset_index >= 9999)
                 {
                     exp_prob(r, rng1, rand_reset);
                     reset_index = 0;
@@ -164,7 +164,7 @@ double fpt_from_0(double r, double s, double reset_pos, double v,double L)
                 dt = next_switch;
                 p.switch_direction(dt);
                 switch_index++;
-                if(switch_index >= 999){
+                if(switch_index >= 9999){
                     exp_prob(s, rng2, rand_switch);
                     switch_index = 0;
                 }
@@ -231,7 +231,6 @@ double fpt_from_L(double r, double s, double reset_pos, double v, double L)
             c = (e - time) - d;
             
             time = e;
- 
     }
 
     return time;
@@ -242,7 +241,7 @@ int main(int argc, char* argv[]) {
 
     char* jobid_env;
     unsigned long jobid;
-    if (NULL == (jobid_env = std::getenv("SLURM_JOB_ID"))) {
+    if (NULL == (jobid_env = std::getenv("SLURM_ARRAY_TASK_ID"))) {
         jobid = 10101;
     } else {
         jobid = std::stol(jobid_env);
@@ -325,6 +324,7 @@ int main(int argc, char* argv[]) {
     end_hit.reserve(num_simulations);
     fp_time.reserve(num_simulations);
 
+    jobid += 1234978;
     unsigned long seed[6] {jobid, jobid, jobid, jobid, jobid, jobid};
     RngStream::SetPackageSeed(seed);
 
@@ -346,6 +346,10 @@ int main(int argc, char* argv[]) {
             fp_time.push_back(fpt_from_0(r, theta, reset_pos, v, L));
         }
 
+        if(sim_count % 100 == 0){
+            std::cout << "finished" << sim_count << std::endl;
+            std::cout << std::flush;
+        }
     }
 
 
@@ -355,7 +359,7 @@ int main(int argc, char* argv[]) {
     {
         std::cout << "Beginning writing" << std::endl << std::flush;
         H5Easy::File writefile(result_dir + "/" + std::to_string(jobid) + ".h5",
-                               H5Easy::File::OpenOrCreate);
+                               H5Easy::File::Overwrite);
 
         H5Easy::DumpOptions dump_opt;
         dump_opt.set(H5Easy::Flush::True);
